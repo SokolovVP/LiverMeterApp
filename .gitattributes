@@ -1,0 +1,2 @@
+.ipynb filter=lfs diff=lfs merge=lfs -text
+notebooks/data_testing.ipynb filter=lfs diff=lfs merge=lfs -text
