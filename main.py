@@ -1,41 +1,45 @@
-import cv2
-import glob
-import os
-from Services.VideoFramesDivider import VideoFramesDivider
-from Services import DicomGroupsBuilder
-from Services import NiftiBuilderFromDicom
+import re
+import os.path
+
+from flask import Flask, jsonify, request
+from flask_cors import CORS, cross_origin
+from WebServices.UploadService import UploadService
+from Services.LiverSegmenter import segment_liver
+from Services.SaveImageService import save_image
 
 
-
-#DicomGroupsBuilder.create_groups('D:/GraduateWorkData/dicom_file2/images', 'D:/GraduateWorkData/dicom_groups2/images')
-#DicomGroupsBuilder.create_groups('D:/GraduateWorkData/dicom_file2/labels', 'D:/GraduateWorkData/dicom_groups2/labels')
-
-
-# NiftiBuilderFromDicom.create_nifti_images_from_dicom_series(in_path_images='D:/GraduateWorkData/dicom_groups2/images/*',
-#                                                             out_path_images='D:/GraduateWorkData/nifti_files2/images')
-# NiftiBuilderFromDicom.create_nifti_labels_from_dicom_series(in_path_labels='D:/GraduateWorkData/dicom_groups2/labels/*',
-#                                                             out_path_labels='D:/GraduateWorkData/nifti_files2/labels')
-# NiftiBuilderFromDicom.delete_empty_labels('D:/GraduateWorkData/nifti_files2/labels/*',
-#                                           'D:/GraduateWorkData/nifti_files2/images',
-#                                           'D:/GraduateWorkData/nifti_files2/removed_images',
-#                                           'D:/GraduateWorkData/nifti_files2/removed_labels')
+images_root_dir_path = 'D:/универ (D)/4 КУРС/диплом/LiverMeterApp/Images'
+uploaded_images_dir_path = os.path.normpath(os.path.join(images_root_dir_path, 'Uploaded'))
+saved_images_dir_path = os.path.normpath(os.path.join(images_root_dir_path, 'Processed'))
+orig_images_dir_path = os.path.normpath(os.path.join(images_root_dir_path, 'Original'))
 
 
+app = Flask(__name__)
+CORS(app)
 
 
+@app.route('/', methods=['GET', 'POST'])
+@cross_origin()
+def home():
+    if request.method == 'GET':
+        return jsonify({'data': 'MRI LIVER SEGMENTATION'})
+    elif request.method == 'POST':
+
+        _img = request.files['image_data']
+        _filename = UploadService.upload_file(_img, os.path.normpath(
+            os.path.join(images_root_dir_path, uploaded_images_dir_path)))
+
+        _filename = re.sub(r'\.nii', '', _filename)
+        _filename = re.sub(r'\.gz', '', _filename)
+
+        _filepath = os.path.join(uploaded_images_dir_path, _filename)
+
+        orig_image, segmented_img = segment_liver(filepath=_filepath+'.nii.gz')
+
+        segmented_image_path = save_image(saved_images_dir_path, _filename, segmented_img)
+        original_image_path = save_image(orig_images_dir_path, _filename, segmented_img)
+
+        return jsonify({'filename': _filename})
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.run(debug=True)

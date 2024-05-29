@@ -5,7 +5,7 @@ from monai.losses import DiceLoss, DiceCELoss
 import torch
 
 
-from preprocessing_1 import prepare
+from preprocessing import prepare
 from utilities import train, calculate_weights
 
 

@@ -1,24 +1,45 @@
 <template>
   <div id="header_container">
     <div class="header_item" id="header_logo">МРТ СЕГМЕНТАЦИЯ ПЕЧЕНИ</div>
-    <button
-      v-on:click="upload_image_btn_click"
+    <input
+      type="file"
+      v-on:change="upload_image_changed"
       class="header_item, header_button"
       id="upload_image_btn"
+    />
+    <label id="upload_label" for="upload_image_btn" class="header_item"
+      ><img id="upload_img" src="./icons/upload_icon.png" />ЗАГРУЗИТЬ NIFTI ФАЙЛ</label
     >
-      + Загрузить файл
-    </button>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
+import image_service from '@/services/image_service'
 
-const msg = ref('HEADER HELLO WORLD')
+const file = ref(null)
 
-function upload_image_btn_click() {
-  alert('clicked')
+function upload_image_changed(event) {
+  isPageLoaded.value = true
+  file.value = event.target.files[0]
+  console.log(file.value)
+  image_service
+    .upload_image(file.value)
+    .then((response) => {
+      console.log(`${response.data.filename}`)
+      return response
+    })
+    .catch((error) => {
+      console.log(error)
+      return error
+    })
 }
+
+const isPageLoaded = ref(false)
+
+onMounted(() => {
+  isPageLoaded.value = false
+})
 </script>
 
 <style scoped>
@@ -55,6 +76,22 @@ function upload_image_btn_click() {
 
 #upload_image_btn {
   margin-left: 100px;
+  display: none;
+}
+
+#upload_img {
+  width: 11px;
+  height: 11px;
+  padding-right: 5px;
+}
+
+#upload_label {
+  margin-left: 100px;
+  margin-top: 2px;
+}
+
+#upload_label:hover {
+  transform: scale(1.1);
 }
 
 #upload_image_btn:hover {
