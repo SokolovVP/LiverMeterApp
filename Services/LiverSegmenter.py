@@ -50,4 +50,5 @@ def segment_liver(filepath, weights_dir='D:/GraduateWorkData/nifti_files2/22vs8/
                 max_image = processed_image
                 max_segmentation = test_patient['vol'][0, 0, :, :, i]
 
-        return max_image, max_segmentation
+        print(max_image.numpy().shape, type(max_image.numpy()), max_image.shape)
+        return max_image, max_segmentation, np.count_nonzero(max_image.numpy())

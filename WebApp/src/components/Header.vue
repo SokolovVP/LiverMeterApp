@@ -1,6 +1,6 @@
 <template>
   <div id="header_container">
-    <div class="header_item" id="header_logo">МРТ СЕГМЕНТАЦИЯ ПЕЧЕНИ</div>
+    <div class="header_item" id="header_logo" @click="logoClicked">МРТ СЕГМЕНТАЦИЯ ПЕЧЕНИ</div>
     <input
       type="file"
       v-on:change="upload_image_changed"
@@ -10,12 +10,23 @@
     <label id="upload_label" for="upload_image_btn" class="header_item"
       ><img id="upload_img" src="./icons/upload_icon.png" />ЗАГРУЗИТЬ NIFTI ФАЙЛ</label
     >
+    <button @click="showImagesBtnClicked" class="header_item, header_button" id="showImagesBtn">
+      ПОКАЗАТЬ ИЗОБРАЖЕНИЯ
+    </button>
   </div>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import image_service from '@/services/image_service'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const filename = ref(null)
+const segmented_dir = ref(null)
+const orig_dir = ref(null)
+const organ_area = ref(null)
 
 const file = ref(null)
 
@@ -26,13 +37,35 @@ function upload_image_changed(event) {
   image_service
     .upload_image(file.value)
     .then((response) => {
-      console.log(`${response.data.filename}`)
-      return response
+      filename.value = response.data[0]['filename']
+      segmented_dir.value = response.data[1]['segmented_dir']
+      orig_dir.value = response.data[2]['orig_dir']
+      organ_area.value = response.data[3]['area']
     })
     .catch((error) => {
       console.log(error)
-      return error
     })
+}
+
+function showImagesBtnClicked() {
+  // if (filename.value && segmented_dir.value && orig_dir.value) {
+  localStorage.setItem('filename', filename.value)
+  localStorage.setItem('segmented_dir', segmented_dir.value)
+  localStorage.setItem('orig_dir', orig_dir.value)
+  localStorage.setItem('organ_area', organ_area.value)
+
+  router.push({
+    name: 'ImagesView',
+    query: {
+      filename: filename.value,
+      segmented_dir: segmented_dir.value,
+      orig_dir: orig_dir.value,
+      organ_area: organ_area.value
+    }
+  })
+  // } else {
+  // alert('Сначала загрузите данные')
+  // }
 }
 
 const isPageLoaded = ref(false)
@@ -40,6 +73,10 @@ const isPageLoaded = ref(false)
 onMounted(() => {
   isPageLoaded.value = false
 })
+
+function logoClicked() {
+  router.push({ path: '/' })
+}
 </script>
 
 <style scoped>
@@ -86,7 +123,8 @@ onMounted(() => {
 }
 
 #upload_label {
-  margin-left: 100px;
+  /* margin-left: 100px; */
+  margin-left: 200px;
   margin-top: 2px;
 }
 
@@ -96,5 +134,18 @@ onMounted(() => {
 
 #upload_image_btn:hover {
   cursor: pointer;
+}
+
+#showImagesBtn {
+  margin-left: 45px;
+  background-color: inherit;
+  border: none;
+  margin-bottom: 12px;
+  font-size: 17px;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#showImagesBtn:hover {
+  transform: scale(1.1);
 }
 </style>
