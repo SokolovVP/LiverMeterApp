@@ -3,7 +3,7 @@ from glob import glob
 
 from monai.transforms import (
     Compose,
-    EnsureChannelFirstD,
+    EnsureChannelFirstd,
     LoadImaged,
     Resized,
     ToTensord,
@@ -33,7 +33,7 @@ def prepare(in_dir, pixdim=(2, 2, 1.5), a_min=-100, a_max=400, spatial_size=[128
     train_transforms = Compose(
         [
             LoadImaged(keys=["vol", "seg"]),
-            EnsureChannelFirstD(keys=["vol", "seg"]),
+            EnsureChannelFirstd(keys=["vol", "seg"]),
             Spacingd(keys=["vol", "seg"], pixdim=pixdim, mode=("bilinear", "nearest")),
             Orientationd(keys=["vol", "seg"], axcodes="RAS"),
             ScaleIntensityRanged(keys=["vol"], a_min=a_min, a_max=a_max, b_min=0.0, b_max=1.0, clip=True),
@@ -47,7 +47,7 @@ def prepare(in_dir, pixdim=(2, 2, 1.5), a_min=-100, a_max=400, spatial_size=[128
     test_transforms = Compose(
         [
             LoadImaged(keys=["vol", "seg"]),
-            EnsureChannelFirstD(keys=["vol", "seg"]),
+            EnsureChannelFirstd(keys=["vol", "seg"]),
             Spacingd(keys=["vol", "seg"], pixdim=pixdim, mode=("bilinear", "nearest")),
             Orientationd(keys=["vol", "seg"], axcodes="RAS"),
             ScaleIntensityRanged(keys=["vol"], a_min=a_min, a_max=a_max, b_min=0.0, b_max=1.0, clip=True),
@@ -85,7 +85,7 @@ def preprocess_nifti(filepath,
     transforms = Compose(
         [
             LoadImaged(keys=['vol']),
-            EnsureChannelFirstD(keys=['vol']),
+            EnsureChannelFirstd(keys=['vol']),
             Spacingd(keys=['vol'], pixdim=pixdim, mode=('bilinear')),
             Orientationd(keys=['vol'], axcodes='RAS'),
             ScaleIntensityRanged(keys=['vol'], a_min=a_min, a_max=a_max, b_min=0.0, b_max=1.0, clip=True),
